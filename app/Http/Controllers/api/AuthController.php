@@ -19,7 +19,7 @@ class AuthController extends Controller
             'name' => 'required',
             'lastName' => 'required',
             'documentType' => 'required',
-            'documentNumber' => 'required',
+            'documentNumber' => 'required|string|unique:users,documentNumber',
             'nationality' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required|confirmed|min:8',
@@ -51,7 +51,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+    public function login(Request $request): \Illuminate\Foundation\Application  | \Illuminate\Http\Response  | \Illuminate\Http\JsonResponse  | \Illuminate\Contracts\Foundation\Application  | \Illuminate\Contracts\Routing\ResponseFactory
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -85,7 +85,7 @@ class AuthController extends Controller
                 "message" => "userProfile OK",
                 "userData" => auth()->user(),
             ], Response::HTTP_OK);
-        }else{
+        } else {
             auth()->user()->tokens()->delete();
             return response()->json([
                 "message" => "Usuario no autorizado",
@@ -102,11 +102,11 @@ class AuthController extends Controller
         $user->status = $status;
         $user->save();
 
-        if($status==1){
+        if ($status == 1) {
             return response()->json([
                 "message" => "Usuario autorizado",
             ], Response::HTTP_OK);
-        }else{
+        } else {
             return response()->json([
                 "message" => "Usuario no autorizado",
             ], Response::HTTP_OK);
@@ -120,7 +120,6 @@ class AuthController extends Controller
         return response()->json([
             "message" => "Sesión cerrada",
         ], Response::HTTP_OK);
-
 
     }
 }

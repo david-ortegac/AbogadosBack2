@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('lastName');
             $table->string('documentType');
-            $table->string('documentNumber');
+            $table->string('documentNumber')->unique();
             $table->string('nationality');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
