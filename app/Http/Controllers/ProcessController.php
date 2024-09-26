@@ -94,7 +94,7 @@ class ProcessController extends Controller
 
     public function getAllWithoutPagination()
     {
-        $user = User::all();
+        $user = User::where('status', '=', '1')->get();
         foreach ($user as $u) {
             $u->process = Process::where('userId', $u->id)->get();
         }
