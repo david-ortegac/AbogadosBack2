@@ -95,14 +95,14 @@ class AuthController extends Controller
 
     }
 
-    public function changeUserStatus($userId, $status): \Illuminate\Http\JsonResponse
+    public function changeUserStatus(Request $request): \Illuminate\Http\JsonResponse
     {
-        $user = User::find($userId);
+        $user = User::find($request->id);
 
-        $user->status = $status;
+        $user->status = $request->status;
         $user->save();
 
-        if ($status == 1) {
+        if ($request->status == 1) {
             return response()->json([
                 "message" => "Usuario autorizado",
             ], Response::HTTP_OK);

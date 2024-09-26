@@ -24,12 +24,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('change-user-status/{userId}/{status}', [AuthController::class, 'changeUserStatus']);
 
     //Registro de los casos
-    Route::get('get-all', [ProcessController::class, 'getAll']);
-    Route::get('get-by-document-dashboard/{documentType}/{documentNumber}',
-    [ProcessController::class, 'getByIdIntranet']);
-    Route::post('save-process', [ProcessController::class, 'store']);
-    Route::patch('update-process', [ProcessController::class, 'update']);
-    Route::patch('deactivate', [ProcessController::class, 'deactivate']);
+    Route::get('process', [ProcessController::class, 'getAll']);
+    Route::get('get-by-document-dashboard', [ProcessController::class, 'getByIdIntranet']);
+    Route::post('process', [ProcessController::class, 'store']);
+    Route::patch('process', [ProcessController::class, 'update']);
+    Route::patch('deactivate-process', [ProcessController::class, 'deactivateProcess']);
+    
 });
 
 //ver los datos

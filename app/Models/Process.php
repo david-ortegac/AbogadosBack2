@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -30,8 +31,8 @@ class Process extends Model
 
     static $rules = [
 		'userId'=>'required',
-		'processId'=>'required',
-        'applicationDate' => 'required|date',
+		'processId'=>"required|unique:processes",
+        'applicationDate' => 'required',
         'pendingPayment' => 'required',
         'processTitle'=>'required',
         'processStatus' => 'required',
@@ -52,14 +53,14 @@ class Process extends Model
 		'processId',
         'applicationDate',
         'pendingPayment',
-        'processStatus',
         'processTitle',
+        'processStatus',
         'status',
     ];
 
-    public function user(): BelongsTo
+    public function user(): HasOne
     {
-        return $this->belongsTo('App\Models\User', 'id', 'userId');
+        return $this->HasOne('App\Models\User', 'id', 'userId');
     }
 
 }

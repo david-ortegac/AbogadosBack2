@@ -17,7 +17,7 @@ class ProcessController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int $id
+     * @param  string $processId
      * @return JsonResponse
      */
     public function getByIdPulic($processId)
@@ -27,8 +27,9 @@ class ProcessController extends Controller
             ->get();
 
         if ($process->count() > 0) {
-            foreach($process as $p){
+            foreach ($process as $p) {
                 unset($p->id);
+                unset($p->userId);
                 unset($p->pendingPayment);
                 unset($p->validationKey);
                 unset($p->status);
@@ -50,20 +51,26 @@ class ProcessController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int $id
+     * @param  string $documentType
+     * @param  int $documentNumber
      * @return JsonResponse
      */
-    public function getByIdIntranet($documentType, $documentNumber)
+    public function getByIdIntranet(Request $request)
     {
-        $process = User::where('documentNumber', '=', $documentNumber)
-            ->where('documentType', '=', $documentType)
+        $user = User::where('documentNumber', '=', $request->documentNumber)
+            ->where('documentType', '=', $request->documentType)
             ->where('status', '=', '1')
-            ->get();
+            ->first();
 
-        if ($process->count() > 0) {
+        if (isset($user)) {
+
+            $process = Process::where('userId', $user->id)->get();
+
+            $user->process = $process;
+
             return response()->json([
                 'status' => Response::HTTP_OK,
-                'data' => $process,
+                'data' => $user,
             ]);
         } else {
             return response()->json([
@@ -76,23 +83,22 @@ class ProcessController extends Controller
 
     public function getAll()
     {
-        $process = Process::where('status', '=', '1')->paginate(20);
+        $user = User::where('status', '=', '1')->paginate(20);
 
-        if ($process->count() > 0) {
-            return $process;
-        } else {
-            return response()->json([
-                'status' => Response::HTTP_BAD_REQUEST,
-                'error' => 'No existen registros para retornar',
-            ]);
+        foreach ($user as $u) {
+            $u->process = Process::where('userId', $u->id)->get();
         }
+        return $user;
 
     }
 
     public function getAllWithoutPagination()
     {
-        $process = Process::all();
-        return response()->json($process);
+        $user = User::all();
+        foreach ($user as $u) {
+            $u->process = Process::where('userId', $u->id)->get();
+        }
+        return response()->json($user);
     }
 
     /**
@@ -113,19 +119,13 @@ class ProcessController extends Controller
         }
 
         $process = new Process;
+        $process->userId = $request->userId;
         $process->processId = $request->processId;
-        $process->documentType = $request->documentType;
-        $process->documentNumber = $request->documentNumber;
-        $process->name = $request->name;
-        $process->lastName = $request->lastName;
-        $process->nationality = $request->nationality;
         $process->applicationDate = $request->applicationDate;
         $process->pendingPayment = $request->pendingPayment;
         $process->processTitle = $request->processTitle;
         $process->processStatus = $request->processStatus;
-        $process->status = 1;
-        $process->Link = $request->Link;
-        $process->validationKey = rand(1000, 9999);
+        $process->status = $request->status;
 
         $process->save();
 
@@ -151,31 +151,10 @@ class ProcessController extends Controller
      * @param  Process $process
      * @return JsonResponse
      */
-    public function update(Request $request, Process $process)
+    public function update(Request $request)
     {
         $process = Process::find($request->id);
 
-        if ($request->processId != null) {
-            $process->processId = $request->processId;
-        }
-        if ($request->documentType != null) {
-            $process->documentType = $request->documentType;
-        }
-        if ($request->documentNumber != null) {
-            $process->documentNumber = $request->documentNumber;
-        }
-        if ($request->name != null) {
-            $process->name = $request->name;
-        }
-        if ($request->lastName != null) {
-            $process->lastName = $request->lastName;
-        }
-        if ($request->nationality != null) {
-            $process->nationality = $request->nationality;
-        }
-        if ($request->applicationDate != null) {
-            $process->applicationDate = $request->applicationDate;
-        }
         if ($request->pendingPayment != null) {
             $process->pendingPayment = $request->pendingPayment;
         }
@@ -184,12 +163,6 @@ class ProcessController extends Controller
         }
         if ($request->processStatus != null) {
             $process->processStatus = $request->processStatus;
-        }
-        if ($request->status != null) {
-            $process->status = $request->status;
-        }
-        if ($request->Link != null) {
-            $process->Link = $request->Link;
         }
 
         $process->save();
@@ -208,14 +181,13 @@ class ProcessController extends Controller
 
     }
 
-    public function deactivate(Request $request)
+    public function deactivateProcess(Request $request)
     {
         $process = Process::find($request->id);
 
-        $process->status = 0;
-        $process->save();
-
-        if ($process->count() > 0) {
+        if (isset($process)) {
+            $process->status = 0;
+            $process->save();
             return response()->json([
                 'status' => Response::HTTP_OK,
                 'data' => $process,
