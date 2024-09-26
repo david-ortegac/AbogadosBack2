@@ -21,7 +21,7 @@ Route::post('register', [AuthController::class, 'register']);
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('profile', [AuthController::class, 'userProfile']);
     Route::post('logout', [AuthController::class, 'logout']);
-    Route::get('change-user-status', [AuthController::class, 'changeUserStatus']);
+    Route::patch('change-user-status', [AuthController::class, 'changeUserStatus']);
 
     //Registro de los casos
     Route::get('process', [ProcessController::class, 'getAll']);
