@@ -82,8 +82,8 @@ class AuthController extends Controller
     {
         if (auth()->user()->status == 1) {
             return response()->json([
-                "message" => "userProfile OK",
-                "userData" => auth()->user(),
+                "status" => Response::HTTP_OK,
+                "data" => auth()->user(),
             ], Response::HTTP_OK);
         } else {
             auth()->user()->tokens()->delete();
