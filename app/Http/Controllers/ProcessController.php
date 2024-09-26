@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Process;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,24 +20,30 @@ class ProcessController extends Controller
      * @param  int $id
      * @return JsonResponse
      */
-    public function getByIdPulic($documentType, $documentNumber, $validationKey)
+    public function getByIdPulic($processId)
     {
-        $process = Process::where('documentNumber', '=', $documentNumber)
-            ->where('documentType', '=', $documentType)
-            ->where('validationKey', '=', $validationKey)
+        $process = Process::where('processId', '=', $processId)
             ->where('status', '=', '1')
             ->get();
 
         if ($process->count() > 0) {
+            foreach($process as $p){
+                unset($p->id);
+                unset($p->pendingPayment);
+                unset($p->validationKey);
+                unset($p->status);
+                unset($p->created_at);
+                unset($p->updated_at);
+            }
             return response()->json([
                 'status' => Response::HTTP_OK,
                 'data' => $process,
-            ]);
+            ], Response::HTTP_OK);
         } else {
             return response()->json([
                 'status' => Response::HTTP_BAD_REQUEST,
                 'error' => 'No existen registros para retornar',
-            ]);
+            ], Response::HTTP_NOT_FOUND);
         }
     }
 
@@ -48,7 +55,7 @@ class ProcessController extends Controller
      */
     public function getByIdIntranet($documentType, $documentNumber)
     {
-        $process = Process::where('documentNumber', '=', $documentNumber)
+        $process = User::where('documentNumber', '=', $documentNumber)
             ->where('documentType', '=', $documentType)
             ->where('status', '=', '1')
             ->get();
@@ -82,7 +89,8 @@ class ProcessController extends Controller
 
     }
 
-    public function getAllWithoutPagination(){
+    public function getAllWithoutPagination()
+    {
         $process = Process::all();
         return response()->json($process);
     }
@@ -95,7 +103,6 @@ class ProcessController extends Controller
      */
     public function store(Request $request)
     {
-        $request;
         $validator = \Validator::make($request->input(), Process::$rules);
 
         if ($validator->fails()) {

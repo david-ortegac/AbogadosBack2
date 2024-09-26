@@ -33,7 +33,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 });
 
 //ver los datos
-Route::get('get-by-document/{documentType}/{documentNumber}/{validationKey}',
+Route::get('get-by-process-id/{processId}',
     [ProcessController::class, 'getByIdPulic']);
 
 Route::get('get_all', [ProcessController::class, 'getAllWithoutPagination']);

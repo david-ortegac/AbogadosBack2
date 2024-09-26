@@ -48,7 +48,7 @@ class AuthController extends Controller
         return response()->json([
             'Data' => $user,
             'status' => Response::HTTP_CREATED,
-        ]);
+        ], Response::HTTP_OK);
     }
 
     public function login(Request $request): \Illuminate\Foundation\Application  | \Illuminate\Http\Response  | \Illuminate\Http\JsonResponse  | \Illuminate\Contracts\Foundation\Application  | \Illuminate\Contracts\Routing\ResponseFactory

@@ -21,8 +21,6 @@ return new class extends Migration
             $table->string('processTitle')->nullable();
             $table->string('processStatus')->nullable();
             $table->char('status')->nullable();
-            $table->char('validationKey');
-            $table->string('Link');
             $table->timestamps();
         });
     }
