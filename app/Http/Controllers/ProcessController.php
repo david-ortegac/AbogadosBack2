@@ -24,7 +24,7 @@ class ProcessController extends Controller
     {
         $process = Process::where('processId', '=', $processId)
             ->where('status', '=', '1')
-            ->fist();
+            ->get();
 
         if (isset($process)) {
             foreach ($process as $p) {
