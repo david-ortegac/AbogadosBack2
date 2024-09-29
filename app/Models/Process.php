@@ -63,4 +63,9 @@ class Process extends Model
         return $this->HasOne('App\Models\User', 'id', 'userId');
     }
 
+    public function history(): HasOne{
+
+        return $this->HasOne('App\Models\History', 'processId', 'id');
+    }
+
 }

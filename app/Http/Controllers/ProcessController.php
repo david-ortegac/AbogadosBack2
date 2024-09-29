@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\History;
 use App\Models\Process;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -66,6 +67,10 @@ class ProcessController extends Controller
 
             $process = Process::where('userId', $user->id)->get();
 
+            foreach($process as $p) {
+                $p->history = History::where('processId', $p->id)->get();
+            }
+
             $user->process = $process;
 
             return response()->json([
@@ -83,7 +88,8 @@ class ProcessController extends Controller
 
     public function getAll()
     {
-        $user = User::where('status', '=', '1')->paginate(20);
+        $user = User::where('status', '=', '1')->
+            where('type','user')->paginate(20);
 
         foreach ($user as $u) {
             $u->process = Process::where('userId', $u->id)->get();
