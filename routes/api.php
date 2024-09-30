@@ -26,7 +26,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     //Registro de los casos
     Route::get('process', [ProcessController::class, 'getAll']);
     Route::get('get_all', [ProcessController::class, 'getAllWithoutPagination']);
-    Route::get('get-by-document-dashboard', [ProcessController::class, 'getByIdIntranet']);
+    Route::get('get-by-document-dashboard/{documentType}/{documentNumber}', [ProcessController::class, 'getByIdIntranet']);
     Route::post('process', [ProcessController::class, 'store']);
     Route::patch('process', [ProcessController::class, 'update']);
     Route::patch('deactivate-process', [ProcessController::class, 'deactivateProcess']);

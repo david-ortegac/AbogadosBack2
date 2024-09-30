@@ -56,11 +56,11 @@ class ProcessController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function getByIdIntranet(Request $request): JsonResponse
+    public function getByIdIntranet($documentType, $documentNumber): JsonResponse
     {
-        $user = User::where('documentNumber', '=', $request->documentNumber)
-            ->where('documentType', '=', $request->documentType)
-            ->where('status', '=', '1')
+        $user = User::where('documentNumber', $documentNumber)
+            ->where('documentType', $documentType)
+            ->where('status', '1')
             ->first();
 
         if (isset($user)) {
