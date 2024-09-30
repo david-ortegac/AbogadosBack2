@@ -21,7 +21,7 @@ class ProcessController extends Controller
      * @param string $processId
      * @return JsonResponse
      */
-    public function getByIdPulic($processId)
+    public function getByIdPulic(string $processId): JsonResponse
     {
         $process = Process::where('processId', '=', $processId)
             ->where('status', '=', '1')
@@ -53,11 +53,10 @@ class ProcessController extends Controller
      * Consulta los procesos en Intranet por tipo y numero de documento del usuario filtrado por ID del historial
      * organizado de manera descendente
      *
-     * @param string $documentType
-     * @param int $documentNumber
+     * @param Request $request
      * @return JsonResponse
      */
-    public function getByIdIntranet(Request $request)
+    public function getByIdIntranet(Request $request): JsonResponse
     {
         $user = User::where('documentNumber', '=', $request->documentNumber)
             ->where('documentType', '=', $request->documentType)
@@ -66,7 +65,7 @@ class ProcessController extends Controller
 
         if (isset($user)) {
 
-            $process = Process::where('userId', $user->id)->get();
+            $process = Process::where('userId', $user->id)->orderBy('id', 'DESC')->get();
 
             foreach ($process as $p) {
                 $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
@@ -94,7 +93,7 @@ class ProcessController extends Controller
      *
      * @return JsonResponse
      */
-    public function getAll()
+    public function getAll(): JsonResponse
     {
         $user = User::where('status', '=', '1')->
         where('type', 'user')->paginate(20);
@@ -115,7 +114,7 @@ class ProcessController extends Controller
      *
      * @return JsonResponse
      */
-    public function getAllWithoutPagination()
+    public function getAllWithoutPagination(): JsonResponse
     {
         $user = User::where('status', '=', '1')->
         where('type', 'user')->get();
@@ -179,7 +178,6 @@ class ProcessController extends Controller
      * Actualiza el proceso y guarda su historial
      *
      * @param Request $request
-     * @param Process $process
      * @return JsonResponse
      */
     public function update(Request $request): JsonResponse
