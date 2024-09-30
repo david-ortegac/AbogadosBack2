@@ -28,7 +28,7 @@ class History extends Model
     protected $perPage = 20;
 
     protected $fillable = [
-        '$processId',
+        'processId',
         'applicationDate',
         'processTitle',
         'processStatus',

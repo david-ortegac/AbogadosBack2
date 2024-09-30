@@ -16,9 +16,9 @@ use Symfony\Component\HttpFoundation\Response;
 class ProcessController extends Controller
 {
     /**
-     * Display the specified resource.
+     * Consulta un proceso por su ID de manera publica
      *
-     * @param  string $processId
+     * @param string $processId
      * @return JsonResponse
      */
     public function getByIdPulic($processId)
@@ -28,15 +28,15 @@ class ProcessController extends Controller
             ->get()->first();
 
         if (isset($process)) {
-            foreach ($process as $p) {
-                unset($p->id);
-                unset($p->userId);
-                unset($p->pendingPayment);
-                unset($p->validationKey);
-                unset($p->status);
-                unset($p->created_at);
-                unset($p->updated_at);
-            }
+
+            unset($process->id);
+            unset($process->userId);
+            unset($process->pendingPayment);
+            unset($process->validationKey);
+            unset($process->status);
+            unset($process->created_at);
+            unset($process->updated_at);
+
             return response()->json([
                 'status' => Response::HTTP_OK,
                 'data' => $process,
@@ -50,10 +50,11 @@ class ProcessController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Consulta los procesos en Intranet por tipo y numero de documento del usuario filtrado por ID del historial
+     * organizado de manera descendente
      *
-     * @param  string $documentType
-     * @param  int $documentNumber
+     * @param string $documentType
+     * @param int $documentNumber
      * @return JsonResponse
      */
     public function getByIdIntranet(Request $request)
@@ -67,8 +68,8 @@ class ProcessController extends Controller
 
             $process = Process::where('userId', $user->id)->get();
 
-            foreach($process as $p) {
-                $p->history = History::where('processId', $p->id)->get();
+            foreach ($process as $p) {
+                $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
             }
 
             $user->process = $process;
@@ -76,44 +77,65 @@ class ProcessController extends Controller
             return response()->json([
                 'status' => Response::HTTP_OK,
                 'data' => $user,
-            ]);
+            ], Response::HTTP_OK);
         } else {
             return response()->json([
-                'status' => Response::HTTP_BAD_REQUEST,
+                'status' => Response::HTTP_NOT_FOUND,
                 'error' => 'No existen registros para retornar',
-            ]);
+            ], Response::HTTP_NOT_FOUND);
         }
 
     }
 
+
+    /**
+     * Consulta los procesos en Intranet por tipo y numero de documento del usuario filtrado por ID del historial
+     * organizado de manera descendente con paginacion
+     *
+     * @return JsonResponse
+     */
     public function getAll()
     {
         $user = User::where('status', '=', '1')->
-            where('type','user')->paginate(20);
+        where('type', 'user')->paginate(20);
 
         foreach ($user as $u) {
             $u->process = Process::where('userId', $u->id)->get();
+            foreach ($u->process as $p) {
+                $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
+            }
         }
         return $user;
-
     }
 
+
+    /**
+     * Consulta los procesos en Intranet por tipo y numero de documento del usuario filtrado por ID del historial
+     * organizado de manera descendente sin paginacion
+     *
+     * @return JsonResponse
+     */
     public function getAllWithoutPagination()
     {
-        $user = User::where('status', '=', '1')->get();
+        $user = User::where('status', '=', '1')->
+        where('type', 'user')->get();
+
         foreach ($user as $u) {
             $u->process = Process::where('userId', $u->id)->get();
+            foreach ($u->process as $p) {
+                $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
+            }
         }
-        return response()->json($user);
+        return $user;
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Guarda un nuevo proceso y su primer registro del historial
      *
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validator = \Validator::make($request->input(), Process::$rules);
 
@@ -135,7 +157,11 @@ class ProcessController extends Controller
 
         $process->save();
 
+        //Guarda el historial del proceso
+        $this->saveHistory($process);
+
         if (isset($process)) {
+
             return response()->json([
                 'status' => 201,
                 'data' => $process,
@@ -145,33 +171,27 @@ class ProcessController extends Controller
                 'status' => 400,
                 'data' => 'Error al guardar',
             ], Response::HTTP_BAD_REQUEST);
-
         }
 
     }
 
     /**
-     * Update the specified resource in storage.
+     * Actualiza el proceso y guarda su historial
      *
      * @param Request $request
-     * @param  Process $process
+     * @param Process $process
      * @return JsonResponse
      */
-    public function update(Request $request)
+    public function update(Request $request): JsonResponse
     {
         $process = Process::find($request->id);
-
-        if ($request->pendingPayment != null) {
-            $process->pendingPayment = $request->pendingPayment;
-        }
-        if ($request->processTitle != null) {
-            $process->processTitle = $request->processTitle;
-        }
-        if ($request->processStatus != null) {
-            $process->processStatus = $request->processStatus;
-        }
-
+        $process->pendingPayment = $request->pendingPayment;
+        $process->processTitle = $request->processTitle;
+        $process->processStatus = $request->processStatus;
         $process->save();
+
+        //Actualiza el historial del proceso
+        $this->saveHistory($process);
 
         if ($process->count() > 0) {
             return response()->json([
@@ -187,7 +207,7 @@ class ProcessController extends Controller
 
     }
 
-    public function deactivateProcess(Request $request)
+    public function deactivateProcess(Request $request): JsonResponse
     {
         $process = Process::find($request->id);
 
@@ -205,6 +225,17 @@ class ProcessController extends Controller
             ]);
         }
 
+    }
+
+    function saveHistory(Process $request): History
+    {
+        $history = new History;
+        $history->processId = $request->id;
+        $history->applicationDate = $request->applicationDate;
+        $history->processTitle = $request->processTitle;
+        $history->processStatus = $request->processStatus;
+        $history->save();
+        return $history;
     }
 
 }
