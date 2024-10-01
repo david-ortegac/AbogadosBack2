@@ -93,7 +93,7 @@ class ProcessController extends Controller
      *
      * @return JsonResponse
      */
-    public function getAll(): JsonResponse
+    public function getAll()
     {
         $user = User::where('status', '=', '1')->
         where('type', 'user')->paginate(20);
