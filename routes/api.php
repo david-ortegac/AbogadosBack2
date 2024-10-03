@@ -29,7 +29,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('get-by-document-dashboard/{documentType}/{documentNumber}', [ProcessController::class, 'getByIdIntranet']);
     Route::post('process', [ProcessController::class, 'store']);
     Route::patch('process', [ProcessController::class, 'update']);
-    Route::patch('deactivate-process', [ProcessController::class, 'deactivateProcess']);
+    Route::patch('deactivate-process/{id}', [ProcessController::class, 'deactivateProcess']);
 });
 
 //ver los datos
