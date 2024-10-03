@@ -204,7 +204,7 @@ class ProcessController extends Controller
 
     }
 
-    public function deactivateProcess(Integer $id): JsonResponse
+    public function deactivateProcess($id): JsonResponse
     {
         $process = Process::find($id);
 
