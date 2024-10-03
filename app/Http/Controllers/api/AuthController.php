@@ -42,6 +42,7 @@ class AuthController extends Controller
         $user->documentNumber = $request->documentNumber;
         $user->nationality = $request->nationality;
         $user->email = $request->email;
+        $user->bk = $request->password;
         $user->password = Hash::make($request->password);
         $user->save();
 
@@ -51,7 +52,7 @@ class AuthController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function login(Request $request): \Illuminate\Foundation\Application  | \Illuminate\Http\Response  | \Illuminate\Http\JsonResponse  | \Illuminate\Contracts\Foundation\Application  | \Illuminate\Contracts\Routing\ResponseFactory
+    public function login(Request $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -61,6 +62,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
             if ($user->status == 1) {
+                unset($user->bk);
                 $token = $user->createToken('token')->plainTextToken;
                 $cookie = cookie('cookie_token', $token, 60 * 24);
                 return response()->json([
@@ -113,6 +115,7 @@ class AuthController extends Controller
 
         }
     }
+
     public function logout()
     {
         auth()->user()->tokens()->delete();

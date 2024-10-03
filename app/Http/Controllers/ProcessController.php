@@ -7,6 +7,7 @@ use App\Models\Process;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Ramsey\Uuid\Type\Integer;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -28,7 +29,6 @@ class ProcessController extends Controller
             ->get()->first();
 
         if (isset($process)) {
-
             unset($process->id);
             unset($process->userId);
             unset($process->pendingPayment);
@@ -64,8 +64,8 @@ class ProcessController extends Controller
             ->first();
 
         if (isset($user)) {
-
-            $process = Process::where('userId', $user->id)->orderBy('id', 'DESC')->get();
+            unset($user->bk);
+            $process = Process::where('status','1')->where('userId', $user->id)->orderBy('id', 'DESC')->get();
 
             foreach ($process as $p) {
                 $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
@@ -91,7 +91,6 @@ class ProcessController extends Controller
      * Consulta los procesos en Intranet por tipo y numero de documento del usuario filtrado por ID del historial
      * organizado de manera descendente con paginacion
      *
-     * @return JsonResponse
      */
     public function getAll()
     {
@@ -99,7 +98,7 @@ class ProcessController extends Controller
         where('type', 'user')->paginate(20);
 
         foreach ($user as $u) {
-            $u->process = Process::where('userId', $u->id)->get();
+            $u->process = Process::where('status','1')->where('userId', $u->id)->get();
             foreach ($u->process as $p) {
                 $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
             }
@@ -114,13 +113,13 @@ class ProcessController extends Controller
      *
      * @return JsonResponse
      */
-    public function getAllWithoutPagination(): JsonResponse
+    public function getAllWithoutPagination()
     {
         $user = User::where('status', '=', '1')->
         where('type', 'user')->get();
 
         foreach ($user as $u) {
-            $u->process = Process::where('userId', $u->id)->get();
+            $u->process = Process::where('status','1')->where('userId', $u->id)->get();
             foreach ($u->process as $p) {
                 $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
             }
@@ -205,9 +204,9 @@ class ProcessController extends Controller
 
     }
 
-    public function deactivateProcess(Request $request): JsonResponse
+    public function deactivateProcess(Integer $id): JsonResponse
     {
-        $process = Process::find($request->id);
+        $process = Process::find($id);
 
         if (isset($process)) {
             $process->status = 0;
