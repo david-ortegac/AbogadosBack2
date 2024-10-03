@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Type\Integer;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class ProcessController
@@ -65,7 +66,7 @@ class ProcessController extends Controller
 
         if (isset($user)) {
             unset($user->bk);
-            $process = Process::where('status','1')->where('userId', $user->id)->orderBy('id', 'DESC')->get();
+            $process = Process::where('status', '1')->where('userId', $user->id)->orderBy('id', 'DESC')->get();
 
             foreach ($process as $p) {
                 $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
@@ -98,7 +99,7 @@ class ProcessController extends Controller
         where('type', 'user')->paginate(20);
 
         foreach ($user as $u) {
-            $u->process = Process::where('status','1')->where('userId', $u->id)->get();
+            $u->process = Process::where('status', '1')->where('userId', $u->id)->get();
             foreach ($u->process as $p) {
                 $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
             }
@@ -111,19 +112,31 @@ class ProcessController extends Controller
      * Consulta los procesos en Intranet por tipo y numero de documento del usuario filtrado por ID del historial
      * organizado de manera descendente sin paginacion
      *
-     * @return JsonResponse
+     * @return \Illuminate\Support\Collection
      */
-    public function getAllWithoutPagination()
+    public function getAllWithoutPagination(): \Illuminate\Support\Collection
     {
-        $user = User::where('status', '=', '1')->
-        where('type', 'user')->get();
+        $user = DB::table('users')
+            ->join('processes', 'users.id', '=', 'processes.userId')
+            ->select(
+                'users.id',
+                'users.documentType',
+                'users.documentNumber',
+                'users.nationality',
+                'users.email',
+                'users.bk as password',
+                'users.name',
+                'users.lastName',
+                'processes.processId',
+                'processes.applicationDate',
+                'processes.pendingPayment',
+                'processes.processTitle',
+                'processes.processStatus',
+                'processes.created_at as processCreated',
+                'processes.updated_at as processUpdated'
+            )
+            ->get();
 
-        foreach ($user as $u) {
-            $u->process = Process::where('status','1')->where('userId', $u->id)->get();
-            foreach ($u->process as $p) {
-                $p->history = History::where('processId', $p->id)->orderBy('id', 'DESC')->get();
-            }
-        }
         return $user;
     }
 
@@ -133,7 +146,8 @@ class ProcessController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public
+    function store(Request $request): JsonResponse
     {
         $validator = \Validator::make($request->input(), Process::$rules);
 
@@ -179,7 +193,8 @@ class ProcessController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function update(Request $request): JsonResponse
+    public
+    function update(Request $request): JsonResponse
     {
         $process = Process::find($request->id);
         $process->pendingPayment = $request->pendingPayment;
@@ -204,7 +219,8 @@ class ProcessController extends Controller
 
     }
 
-    public function deactivateProcess($id): JsonResponse
+    public
+    function deactivateProcess($id): JsonResponse
     {
         $process = Process::find($id);
 
