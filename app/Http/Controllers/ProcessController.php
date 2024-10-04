@@ -65,7 +65,6 @@ class ProcessController extends Controller
             ->first();
 
         if (isset($user)) {
-            unset($user->bk);
             $process = Process::where('status', '1')->where('userId', $user->id)->orderBy('id', 'DESC')->get();
 
             foreach ($process as $p) {
