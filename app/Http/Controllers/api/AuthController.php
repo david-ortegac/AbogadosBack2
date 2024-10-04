@@ -44,6 +44,10 @@ class AuthController extends Controller
         $user->email = $request->email;
         $user->bk = $request->password;
         $user->password = Hash::make($request->password);
+        if ($request->status != null) {
+            $user->status = 1;
+        }
+
         $user->save();
 
         return response()->json([
