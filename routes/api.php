@@ -20,6 +20,7 @@ Route::post('register', [AuthController::class, 'register']);
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('profile', [AuthController::class, 'userProfile']);
+    Route::patch('profile', [AuthController::class, 'updateProfile']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::patch('change-user-status', [AuthController::class, 'changeUserStatus']);
 

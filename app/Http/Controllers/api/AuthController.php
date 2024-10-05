@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
@@ -29,9 +30,9 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => 400,
+                'status' => Response::HTTP_BAD_REQUEST,
                 'errors' => $validator->errors()->all(),
-            ], 400);
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         //alta del usuario
@@ -56,7 +57,53 @@ class AuthController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function login(Request $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
+    public function updateProfile(Request $request)
+    {
+        //validación de los datos
+        $rules = [
+            'name' => 'required',
+            'lastName' => 'required',
+            'nationality' => 'required',
+            'email' => ['required','email', Rule::unique('users')->ignore($request->id)],
+            'password' => 'required|min:8',
+        ];
+
+        $validator = Validator::make($request->input(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => Response::HTTP_BAD_REQUEST,
+                'errors' => $validator->errors()->all(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        //Find user
+        $user = User::where('documentNumber', $request->documentNumber)->first();
+        if (isset($user)) {
+            $user->name = $request->name;
+            $user->lastName = $request->lastName;
+            $user->nationality = $request->nationality;
+            $user->email = $request->email;
+            $user->bk = $request->password;
+            $user->password = Hash::make($request->password);
+
+            $user->save();
+
+            return response()->json([
+                'Data' => $user,
+                'status' => Response::HTTP_CREATED,
+            ], Response::HTTP_CREATED);
+        } else {
+            return response()->json([
+                'Data' => 'Usuario no encontrado',
+                'status' => Response::HTTP_NOT_FOUND,
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+    }
+
+    public
+    function login(Request $request): \Illuminate\Foundation\Application|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse|\Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -84,7 +131,8 @@ class AuthController extends Controller
         }
     }
 
-    public function userProfile(): \Illuminate\Http\JsonResponse
+    public
+    function userProfile(): \Illuminate\Http\JsonResponse
     {
         if (auth()->user()->status == 1) {
             return response()->json([
@@ -101,7 +149,8 @@ class AuthController extends Controller
 
     }
 
-    public function changeUserStatus(Request $request): \Illuminate\Http\JsonResponse
+    public
+    function changeUserStatus(Request $request): \Illuminate\Http\JsonResponse
     {
         $user = User::find($request->id);
 
@@ -120,7 +169,8 @@ class AuthController extends Controller
         }
     }
 
-    public function logout()
+    public
+    function logout()
     {
         auth()->user()->tokens()->delete();
 
