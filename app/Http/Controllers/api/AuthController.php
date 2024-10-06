@@ -26,7 +26,7 @@ class AuthController extends Controller
             'password' => 'required|confirmed|min:8',
         ];
 
-        $validator = \Validator::make($request->input(), $rules);
+        $validator = Validator::make($request->input(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -57,7 +57,7 @@ class AuthController extends Controller
         ], Response::HTTP_OK);
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request): \Illuminate\Http\JsonResponse
     {
         //validación de los datos
         $rules = [
