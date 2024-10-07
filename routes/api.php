@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\api\AuthController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\ProcessController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,5 +39,7 @@ Route::patch('deactivate-process/{id}', [ProcessController::class, 'deactivatePr
 //ver los datos
 Route::get('get-by-process-id/{processId}',
     [ProcessController::class, 'getByIdPulic']);
+
+Route::post('captcha', [Controller::class, 'validateCaptcha']);
 
 
