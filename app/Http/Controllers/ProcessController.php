@@ -196,7 +196,7 @@ class ProcessController extends Controller
     function update(Request $request): JsonResponse
     {
         $process = Process::find($request->id);
-        $process->pendingPayment = $request->pendingPayment;
+        $process->applicationDate = $request->applicationDate;
         $process->processTitle = $request->processTitle;
         $process->processStatus = $request->processStatus;
         $process->save();
