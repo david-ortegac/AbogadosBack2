@@ -40,6 +40,7 @@ Route::patch('deactivate-process/{id}', [ProcessController::class, 'deactivatePr
 Route::get('get-by-process-id/{processId}',
     [ProcessController::class, 'getByIdPulic']);
 
+//recaptcha
 Route::post('captcha', [Controller::class, 'validateCaptcha']);
 
 
