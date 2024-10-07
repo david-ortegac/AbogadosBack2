@@ -15,8 +15,8 @@ return new class extends Migration {
             $table->bigInteger('processId')->unsigned()->index();
             $table->foreign('processId')->references('id')->on('processes');
             $table->string('applicationDate');
-            $table->string('processTitle');
-            $table->string('processStatus');
+            $table->longText('processTitle');
+            $table->longText('processStatus');
             $table->timestamps();
         });
     }

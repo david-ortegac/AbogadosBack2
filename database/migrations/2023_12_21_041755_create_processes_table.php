@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('processId');
             $table->string('applicationDate');
             $table->string('pendingPayment')->nullable();
-            $table->string('processTitle')->nullable();
-            $table->string('processStatus')->nullable();
+            $table->longText('processTitle')->nullable();
+            $table->longText('processStatus')->nullable();
             $table->char('status')->nullable();
             $table->timestamps();
         });
