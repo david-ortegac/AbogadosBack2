@@ -14,7 +14,7 @@ class Controller extends BaseController
 
     public function validateCaptcha(Request $request): ?object
     {
-        return Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+        return Http::post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => '6LdDy1kqAAAAAOo2FlMELbOQNWYZM1jHuY9V07Dy',
             'response' => $request->token
         ])->object();
